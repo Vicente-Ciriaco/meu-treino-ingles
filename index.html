@@ -2,49 +2,56 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Voice Trainer</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>English Voice Trainer Ultra</title>
     <style>
         :root { --primary: #2563eb; --success: #059669; --error: #dc2626; --bg: #f8fafc; }
-        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; }
-        .card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
-        h2 { text-align: center; color: #1e293b; }
-        textarea { width: 100%; height: 100px; padding: 0.5rem; border: 1px solid #cbd5e1; border-radius: 0.5rem; margin: 1rem 0; box-sizing: border-box; }
-        .btn { width: 100%; padding: 0.75rem; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600; margin-bottom: 0.5rem; transition: opacity 0.2s; }
+        body { font-family: -apple-system, system-ui, sans-serif; background: var(--bg); padding: 20px; display: flex; justify-content: center; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); width: 100%; max-width: 500px; margin-top: 20px; text-align: center; }
+        textarea { width: 100%; height: 120px; padding: 12px; border: 1px solid #cbd5e1; border-radius: 0.8rem; margin: 1rem 0; box-sizing: border-box; font-size: 16px; }
+        .btn { width: 100%; padding: 1rem; border: none; border-radius: 0.8rem; cursor: pointer; font-weight: 600; margin-bottom: 0.8rem; transition: all 0.2s; font-size: 1rem; }
         .btn-blue { background: var(--primary); color: white; }
-        .btn-mic { background: #4f46e5; color: white; font-size: 1.1rem; }
+        .btn-mic { background: #4f46e5; color: white; }
+        .btn-mic.recording { background: #ef4444; animation: pulse 1.5s infinite; }
         .btn-hear { background: #94a3b8; color: white; }
+        .btn-finish { background: #64748b; color: white; }
         .hidden { display: none; }
-        .word-box { font-size: 2.5rem; font-weight: 800; text-align: center; margin: 1.5rem 0; color: #1e293b; }
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; background: #f1f5f9; padding: 10px; border-radius: 0.5rem; font-size: 0.9rem; }
-        .result-box { text-align: center; min-height: 3rem; font-weight: 700; margin: 1rem 0; padding: 1rem; border-radius: 0.5rem; }
-        .msg-success { background: #dcfce7; color: var(--success); }
-        .msg-error { background: #fee2e2; color: var(--error); }
+        .word-box { font-size: 2.2rem; font-weight: 800; margin: 1.5rem 0; color: #1e293b; min-height: 3.5rem; display: flex; align-items: center; justify-content: center; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; background: #f1f5f9; padding: 12px; border-radius: 0.8rem; font-size: 0.9rem; font-weight: 600; }
+        .result-box { min-height: 3rem; font-weight: 700; margin: 1rem 0; padding: 1rem; border-radius: 0.8rem; line-height: 1.4; }
+        .msg-success { background: #dcfce7; color: var(--success); border: 1px solid #86efac; }
+        .msg-error { background: #fee2e2; color: var(--error); border: 1px solid #fca5a5; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+        ul { text-align: left; background: #f8fafc; padding: 15px 15px 15px 35px; border-radius: 8px; border: 1px solid #e2e8f0; }
     </style>
 </head>
 <body>
 
 <div class="card" id="setup">
-    <h2>Treino de Inglês</h2>
-    <p>Insira termos ou frases (um por linha):</p>
-    <textarea id="inputList" placeholder="casa&#10;como posso ajuda-lo"></textarea>
-    <button class="btn btn-blue" onclick="startApp()">Começar Treinar</button>
+    <h2>Configurar Treino</h2>
+    <textarea id="inputList" placeholder="casa&#10;carro&#10;bom dia"></textarea>
+    <button class="btn btn-blue" onclick="startApp()">Começar Prática</button>
 </div>
 
 <div class="card hidden" id="app">
-    <div class="stats-grid">
-        <div>Progresso: <span id="stat-pos">0</span>/<span id="stat-total">0</span></div>
-        <div>Acertos: <span id="stat-ok">0</span></div>
+    <div id="training-content">
+        <div class="stats-grid">
+            <div>Progresso: <span id="stat-pos">0</span>/<span id="stat-total">0</span></div>
+            <div>Acertos: <span id="stat-ok">0</span></div>
+        </div>
+        
+        <div class="word-box" id="display-word">---</div>
+        
+        <button class="btn btn-mic" id="btn-listen">🎤 Iniciar Treino Ativo</button>
+        <button class="btn btn-hear" onclick="playAudio()">🔊 Ouvir Pronúncia</button>
+        <button class="btn btn-blue" id="btn-manual-next" onclick="nextWord()">Próxima Palavra ➡️</button>
+        <button class="btn btn-finish" onclick="finishTraining()">🏁 Finalizar e Ver Relatório</button>
+        
+        <div id="result" class="result-box hidden"></div>
     </div>
-    
-    <div class="word-box" id="display-word">---</div>
-    
-    <button class="btn btn-mic" id="btn-listen">🎤 Clicar e Falar</button>
-    <button class="btn btn-hear" onclick="playAudio()">🔊 Ouvir Pronúncia</button>
-    
-    <div id="result" class="result-box hidden"></div>
-    
-    <button class="btn btn-blue hidden" id="btn-next" onclick="nextWord()">Próxima Palavra</button>
+
+    <div id="report-content" class="hidden">
+        </div>
 </div>
 
 <script src="script.js"></script>
